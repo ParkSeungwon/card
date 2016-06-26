@@ -8,13 +8,16 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +0 ~/Programming/card/card.h
-badd +0 ~/Programming/card/card.cpp
-badd +0 ~/Programming/card/card.cc
-badd +0 ~/Programming/card/poker.cpp
-badd +0 ~/Programming/card/hand.cc
-badd +0 ~/Programming/card/Makefile
-badd +0 ~/Programming/card/deck.cc
+badd +1 ~/Programming/card/card.h
+badd +1 ~/Programming/card/card.cpp
+badd +1 ~/Programming/card/card.cc
+badd +1 ~/Programming/card/poker.cpp
+badd +1 ~/Programming/card/hand.cc
+badd +1 ~/Programming/card/Makefile
+badd +1 ~/Programming/card/deck.cc
+badd +0 ~/Programming/card/combi.h
+badd +0 ~/Programming/card/combi.cc
+badd +0 ~/Programming/card/hand.h
 argglobal
 silent! argdel *
 set stal=2
@@ -34,12 +37,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 22 - ((18 * winheight(0) + 23) / 46)
+let s:l = 58 - ((31 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-22
-normal! 026|
+58
+normal! 0
 tabedit ~/Programming/card/card.cc
 set splitbelow splitright
 set nosplitbelow
@@ -56,12 +59,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 46 - ((45 * winheight(0) + 23) / 46)
+let s:l = 19 - ((12 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-46
-normal! 05|
+19
+normal! 0
 tabedit ~/Programming/card/poker.cpp
 set splitbelow splitright
 set nosplitbelow
@@ -78,12 +81,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 41 - ((40 * winheight(0) + 23) / 46)
+let s:l = 9 - ((8 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-41
-normal! 09|
+9
+normal! 016|
 tabedit ~/Programming/card/hand.cc
 set splitbelow splitright
 set nosplitbelow
@@ -100,13 +103,13 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 34 - ((23 * winheight(0) + 23) / 46)
+let s:l = 88 - ((27 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-34
-normal! 012|
-tabedit ~/Programming/card/Makefile
+88
+normal! 021|
+tabedit ~/Programming/card/hand.h
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
@@ -122,35 +125,13 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 13 - ((12 * winheight(0) + 23) / 46)
+let s:l = 14 - ((13 * winheight(0) + 23) / 46)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-13
-normal! 011|
-tabedit ~/Programming/card/deck.cc
-set splitbelow splitright
-set nosplitbelow
-set nosplitright
-wincmd t
-set winheight=1 winwidth=1
-argglobal
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 38 - ((37 * winheight(0) + 23) / 46)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-38
-normal! 0
-tabnext 3
+14
+normal! 033|
+tabnext 5
 set stal=1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

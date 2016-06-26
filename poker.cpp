@@ -6,6 +6,7 @@
 #include<string>
 #include"card.h"
 #include"combi.h"
+#include"hand.h"
 using namespace std;
 constexpr const char* Card::glyph[4];
 constexpr const char Card::g[4];
@@ -14,7 +15,7 @@ int main()
 {
 	Deck deck;
 	deck.shuffle_deck();
-	array<Card, 7> player1, player2;
+	Hand player1, player2, player3;
 
 	cout << "Player 1 has : ";
 	for(int i=0; i<7; i++) cout << deck[i] << ' ';
@@ -22,25 +23,35 @@ int main()
 	cout << "Player 2 has : ";
 	for(int i=7; i<14; i++) cout << deck[i] << ' ';
 	cout << endl;
-	for(auto& a : player1) a = deck.distribute_card(true);
-	for(auto& a : player2) a = deck.distribute_card(true);
+	for(int i=0; i<4; i++) {
+		player1 += deck.distribute_card(true);
+		player2 += deck.distribute_card(true);
+		player3 += deck.distribute_card(true);
+	}	
+	for(int i=0; i<2; i++) {
+		player1 += deck.distribute_card(false);
+		player2 += deck.distribute_card(false);
+		player3 += deck.distribute_card(false);
+	}	
 	
-	Hand h1(player1);
-	Hand h2(player2);
-	h1.show();
-	h2.show();
-	cout << "Player " << (h1 < h2 ? 2 : 1) << " won !!" << endl;
+	player1.show();
+	player2.show();
+	player3.show();
+	cout << player1.predict(deck.deck) << endl;
+	cout << player1.predict(deck.deck, player2.face()) << endl;
+	cout << player1.predict(deck.deck, player3.face()) << endl;
+	cout << endl;
+	cout << player2.predict(deck.deck, player1.face()) << endl;
+	cout << player2.predict(deck.deck) << endl;
+	cout << player2.predict(deck.deck, player3.face()) << endl;
+	cout << endl;
+	cout << player3.predict(deck.deck, player1.face()) << endl;
+	cout << player3.predict(deck.deck, player2.face()) << endl;
+	cout << player3.predict(deck.deck) << endl;
 
-	{
-		Hand h;
-		h.cards.push_back(deck.distribute_card(true));
-		h.cards.push_back(deck.distribute_card(true));
-		h.cards.push_back(deck.distribute_card(true));
-		h.cards.push_back(deck.distribute_card(true));
-		h.cards.push_back(deck.distribute_card(true));
-		h.cards.push_back(deck.distribute_card(true));
-		cout << h.predict(deck.deck) << endl;
-	}
+//	player1.read_hand();
+//	player2.read_hand();
+//	player3.read_hand();
 }
 
 

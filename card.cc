@@ -16,7 +16,7 @@ bool Card::operator>(const Card& r)const
 
 ostream& operator<<(ostream& l, const Card& r)
 {
-//	if(!r.show()) return l << Card::utf8chr(static_cast<int>(Unicode::CARDBACK));
+	if(!r.show()) return l << Card::utf8chr(static_cast<int>(Unicode::CARDBACK));
 	Unicode u;
 	switch(r.c) {
 		case 'C': u = Unicode::CLUB; break;
