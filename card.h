@@ -28,6 +28,7 @@ public:
 	void show(bool s) {show_ = s;}
 	void family(bool f) {family_ = f;}
 	bool family() const { return family_;}
+	static bool is_open(Card a) {return a.show();}
 
 protected:
 	static constexpr const char* glyph[4]  {"♠ ", "♣ ", "♥ ", "♦ "};

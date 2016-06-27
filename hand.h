@@ -9,32 +9,27 @@ class Hand
 {
 public:
 	Hand() {}
-//	int drop_card(int n);
-	void operator+=(Card r); 
+	void operator+=(Card r) {cards[n_++] = r;} 
 	bool operator<(const Hand& r) const;
-	static std::array<Card, 5> eval(std::array<Card, 5> cd);
-	void clear(); 
-	void show(int player_is_human);
+	void clear() {n_= 0;}
+	void show(int zero_if_player_is_human);
 	int point() const {return point_;}
 	void point(int p) {point_ = p;}
 	float predict(std::array<Card, 52> deck);
 	float predict(std::array<Card, 52> deck, std::vector<Card> hn);
-	std::vector<Card> face() const {return opened_cds;}
+	std::vector<Card> face() const;
 	int read_final();
 	int read_hand();
 	int open_cards();
 	void show_family();
 
 protected:
-	Hand(std::array<Card, 5> h);
-	Hand(std::array<Card, 7> h);
-
 	int point_;
-	std::vector<Card> cards, opened_cds, sorted_cds;
+	int n_;
+	std::array<Card, 7> cards;
 
 private:
-	
-	bool is_straight() const;
+	bool is_straight() ;
 	bool is_flush() const;
 	int count_same();
 };

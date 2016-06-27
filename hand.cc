@@ -9,39 +9,11 @@
 #include"hand.h"
 using namespace std;
 
-Hand::Hand(array<Card, 5> h) 
-{
-	copy_n(h.begin(), 5, opened_cds.begin());
-	read_hand();
-}
-
-Hand::Hand(array<Card, 7> h)
-{
-	array<Card, 5> tmp, rs;
-	copy_n(h.begin(), 5, rs.begin());
-	nCr ncr(7, 5);
-	while(ncr.next()) {
-		for(int i=0; i<5; i++) tmp[i] = h[ncr[i]-1];
-		if(Hand(rs) < Hand(tmp)) rs = tmp;
-	}
-	*this = Hand(rs);	
-}
-
-float Hand::predict(array<Card, 52> dk)
-{
-	return predict(dk, cards);
-}
-
-void Hand::operator+=(Card cd) {
-	cards.push_back(cd); 
-	if(cd.show()) opened_cds.push_back(cd);
-}
-
 float Hand::predict(array<Card, 52> dk, vector<Card> hn)
 {
 	if(hn.size() < 4) return 1;//3 is better
 	if(hn.size() == 7)  return read_final();
-	auto part = partition(dk.begin(), dk.end(), [](Card a) {return !a.show();});
+	auto part = partition(dk.begin(), dk.end(), Card::is_open);
 	part = remove_if(dk.begin(), part, [&](Card a) {
 			return find(cards.begin(), cards.end(), a) != cards.end();});
 	int sz = part - dk.begin();
@@ -66,60 +38,58 @@ float Hand::predict(array<Card, 52> dk, vector<Card> hn)
 	return float(m) / n;
 }
 
-void Hand::clear()
+float Hand::predict(array<Card, 52> dk)
 {
-	cards.clear();
-	sorted_cds.clear();
-	opened_cds.clear();
+	vector<Card> t;
+	for(auto& a : cards) t.push_back(a);
+	return predict(dk, t);
 }
 
 bool Hand::is_flush() const
-{//calculate with front 5 cards of sorted_cds
-	if(sorted_cds.size() < 5) return false;
-	for(int i=0; i<4; i++) if(sorted_cds[i].c != sorted_cds[i+1].c) return false;
+{//cal with 3~7th cards
+	if(n_ < 7) return false;
+	for(int i=2; i<6; i++) if(cards[i].c != cards[i+1].c) return false;
 	return true;
 }
 
-bool Hand::is_straight() const
+bool Hand::is_straight() 
 {//calculate with front 5 cards of sorted_cds
-	if(sorted_cds.size() < 5) return false;
-	auto h = sorted_cds;
-	//sort(h.begin(), h.end());
+	if(n_ < 7) return false;
+	sort(cards.begin() + 2, cards.end());
 	int serial = 0;
-	for(int i=0; i<4; i++)	if(h[i].comp_n() == h[i+1].comp_n() - 1) serial++; 
-	return serial == 4 ? true : (serial == 3 && h[3].n == 5 && h[4].n == 1); 
+	for(int i=2; i<6; i++)if(cards[i].comp_n() == cards[i+1].comp_n() - 1) serial++; 
+	return serial == 4 ? true : (serial == 3 && cards[3].n == 5 && cards[4].n == 1); 
 }
 
 int Hand::count_same()
 {//one pair 1, two pair 2, triple 3, fullhouse 6, four card 7,  return else 0
 	map<int, int> m;
-	for(auto& a : sorted_cds) m[a.n]++;
+	for(int i=2; i<n_; i++) m[cards[i].n]++;
 	int k = 0, l = 0;
 	for(auto& a : m) {
 		if(a.second == 2) k++;
 		else if(a.second == 3) l = 3;
 		else if(a.second == 4) l = 7;
-		if(a.second > 1) for(auto& b : sorted_cds) 
-			b.n == a.first ? b.family(true) : b.family(false);
+		if(a.second > 1) for(int i=2; i<n_; i++) 
+			cards[i].n == a.first ? cards[i].family(true) : cards[i].family(false);
 	}
 	if(k+l == 4) {//for sorting fullhouse case 
-		for(auto& a : sorted_cds) 
-			if(count(sorted_cds.begin(), sorted_cds.end(), a.n) == 2) a.family(false);
+		for(int i=2; i<7; i++) {
+			if(count(cards.begin() + 2, cards.begin() + n_, cards[i].n) == 2) 
+				cards[i].family(false);
+		}
 	}
-	auto it = partition(sorted_cds.begin(), sorted_cds.end(), [](const Card& a) {
+	auto it = partition(cards.begin() + 2, cards.begin() + n_, [](const Card& a) {
 			return a.family();});
-	sort(sorted_cds.begin(), it, greater<Card>());
-	sort(it, sorted_cds.end(), greater<Card>());
+	sort(cards.begin() + 2, it, greater<Card>());
+	sort(it, cards.begin() + n_, greater<Card>());
 
 	return k+l == 4 ? 6 : k+l;
 }
 
 int Hand::read_hand()
 {//calculate facial point & sort hand in point order, also deals with just 5
-	sorted_cds.clear();
-	for(int i=0; i<5 && i<opened_cds.size(); i++) sorted_cds.push_back(opened_cds[i]);
 	point_ = 0;
-	sort(sorted_cds.begin(), sorted_cds.end());//1
 	if(is_flush()) point_ += 5;//2
 	if(is_straight()) point_ += 4;//3
 	if(point_ == 0) point_ += count_same();
@@ -128,48 +98,50 @@ int Hand::read_hand()
 int Hand::read_final()
 {
 	for(auto& a : cards) a.show(true);
-	opened_cds = cards;
-	read_hand();
-	Hand tmp;
+	auto tmp1 = *this;
+	auto tmp2 = *this;
+	tmp1.read_hand();
 	nCr ncr(7, 5);
 	while(ncr.next()) {
-		for(int i=0; i<5; i++) tmp += opened_cds[ncr[i]-1];
-		tmp.read_hand();
-		if(*this < tmp) *this = tmp;
-		tmp.clear();
+		for(int i=0; i<5; i++) tmp2.cards[i+2] = cards[ncr[i]-1];
+		tmp2.read_hand();
+		if(tmp1 < tmp2) tmp1 = tmp2;
 	}
-//	cout << sorted_cds.size();
-	//sorted_cds = opened_cds;
-//	for(auto& a : cards) cout << a << ' ';
-//	cout << endl;
-	//for(auto& a : sorted_cds) cout << a << ' ';
-//	cout << endl;
+	*this = tmp1;
 	return point_;
-//	sort(hand.begin(), hand.end(), [](const Card& a, const Card& b) {
-//			return (!a.family() && b.family()) || (a.family() && !b.family())
-//				? a.family() && !b.family() : a > b; });
 }
 
 int Hand::open_cards()
 {
 	read_final();
 	for(auto& a : cards) cout << a << ' '; cout << '\t';
-	for(auto& a : sorted_cds) cout << a << ' '; cout << '\t';
 	show_family();
 	return point();
 }
 bool Hand::operator<(const Hand& r) const
 {
 	if(point() == r.point()) {//compare card below v
-		if(sorted_cds == r.sorted_cds) return !(sorted_cds[0] > r.sorted_cds[0]);
-		else return sorted_cds < r.sorted_cds;//compare array
+		array<Card, 5> lt, rt;
+		for(int i=2; i<n_; i++) {
+			lt[i-2] = this->cards[i];
+			rt[i-2] = r.cards[i];
+		}
+		if(lt == rt) return !(lt[0] > rt[0]);
+		else return lt < rt;//compare array
 	} else return point() < r.point();
 }
 
 void Hand::show(int player)
 {
-	if(player == 0) for(auto& a : cards) a.show(true);
-	for(auto& a : cards) cout << a << ' ';
+	if(player == 0) {
+		cards[0].show(true);
+		cards[1].show(true);
+	}
+	for(int i=0; i<n_; i++) cout << cards[i] << ' ';
+	if(player == 0) {
+		cards[0].show(false);
+		cards[1].show(false);
+	}
 	read_hand();
 	show_family();
 }
@@ -188,4 +160,10 @@ void Hand::show_family() {
 	cout << endl;
 }
 
+vector<Card> Hand::face() const
+{
+	vector<Card> r;
+	for(int i=2; i<n_; i++) r.push_back(cards[i]);
+	return r;
+}
 
