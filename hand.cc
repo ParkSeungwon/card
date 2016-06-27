@@ -39,6 +39,7 @@ void Hand::operator+=(Card cd) {
 
 float Hand::predict(array<Card, 52> dk, vector<Card> hn)
 {
+	if(hn.size() < 3) return 1;
 	if(hn.size() == 7)  return read_final();
 	auto part = partition(dk.begin(), dk.end(), [](Card a) {return !a.show();});
 	part = remove_if(dk.begin(), part, [&](Card a) {
@@ -126,7 +127,8 @@ int Hand::read_hand()
 
 int Hand::read_final()
 {
-	for(int i=0; i<5; i++) sorted_cds.push_back(opened_cds[i]);
+	for(auto& a : cards) a.show(true);
+	opened_cds = cards;
 	read_hand();
 	Hand tmp;
 	nCr ncr(7, 5);
@@ -136,6 +138,11 @@ int Hand::read_final()
 		if(*this < tmp) *this = tmp;
 		tmp.sorted_cds.clear();
 	}
+	//sorted_cds = opened_cds;
+//	for(auto& a : cards) cout << a << ' ';
+//	cout << endl;
+//	for(auto& a : sorted_cds) cout << a << ' ';
+//	cout << endl;
 	return point_;
 //	sort(hand.begin(), hand.end(), [](const Card& a, const Card& b) {
 //			return (!a.family() && b.family()) || (a.family() && !b.family())
@@ -150,8 +157,9 @@ bool Hand::operator<(const Hand& r) const
 	} else return point() < r.point();
 }
 
-void Hand::show()
+void Hand::show(int player)
 {
+	if(player == 0) for(auto& a : cards) a.show(true);
 	for(auto& a : cards) cout << a << ' ';
 	read_hand();
 	switch(point()) {
