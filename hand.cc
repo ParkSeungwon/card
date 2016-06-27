@@ -39,7 +39,7 @@ void Hand::operator+=(Card cd) {
 
 float Hand::predict(array<Card, 52> dk, vector<Card> hn)
 {
-	if(hn.size() < 3) return 1;
+	if(hn.size() < 4) return 1;//3 is better
 	if(hn.size() == 7)  return read_final();
 	auto part = partition(dk.begin(), dk.end(), [](Card a) {return !a.show();});
 	part = remove_if(dk.begin(), part, [&](Card a) {
@@ -58,7 +58,7 @@ float Hand::predict(array<Card, 52> dk, vector<Card> hn)
 			a.show(true);
 			cd += a;
 		}
-		cd.read_final();
+		cd.read_final();//here read_final
 		m += cd.point();
 		cd.clear();
 		n++;
@@ -74,14 +74,14 @@ void Hand::clear()
 }
 
 bool Hand::is_flush() const
-{
+{//calculate with front 5 cards of sorted_cds
 	if(sorted_cds.size() < 5) return false;
 	for(int i=0; i<4; i++) if(sorted_cds[i].c != sorted_cds[i+1].c) return false;
 	return true;
 }
 
 bool Hand::is_straight() const
-{
+{//calculate with front 5 cards of sorted_cds
 	if(sorted_cds.size() < 5) return false;
 	auto h = sorted_cds;
 	//sort(h.begin(), h.end());
@@ -115,7 +115,7 @@ int Hand::count_same()
 }
 
 int Hand::read_hand()
-{//calculate facial point & sort hand in point order
+{//calculate facial point & sort hand in point order, also deals with just 5
 	sorted_cds.clear();
 	for(int i=0; i<5 && i<opened_cds.size(); i++) sorted_cds.push_back(opened_cds[i]);
 	point_ = 0;
@@ -136,12 +136,13 @@ int Hand::read_final()
 		for(int i=0; i<5; i++) tmp += opened_cds[ncr[i]-1];
 		tmp.read_hand();
 		if(*this < tmp) *this = tmp;
-		tmp.sorted_cds.clear();
+		tmp.clear();
 	}
+//	cout << sorted_cds.size();
 	//sorted_cds = opened_cds;
 //	for(auto& a : cards) cout << a << ' ';
 //	cout << endl;
-//	for(auto& a : sorted_cds) cout << a << ' ';
+	//for(auto& a : sorted_cds) cout << a << ' ';
 //	cout << endl;
 	return point_;
 //	sort(hand.begin(), hand.end(), [](const Card& a, const Card& b) {
@@ -149,6 +150,14 @@ int Hand::read_final()
 //				? a.family() && !b.family() : a > b; });
 }
 
+int Hand::open_cards()
+{
+	read_final();
+	for(auto& a : cards) cout << a << ' '; cout << '\t';
+	for(auto& a : sorted_cds) cout << a << ' '; cout << '\t';
+	show_family();
+	return point();
+}
 bool Hand::operator<(const Hand& r) const
 {
 	if(point() == r.point()) {//compare card below v
@@ -162,6 +171,10 @@ void Hand::show(int player)
 	if(player == 0) for(auto& a : cards) a.show(true);
 	for(auto& a : cards) cout << a << ' ';
 	read_hand();
+	show_family();
+}
+
+void Hand::show_family() {
 	switch(point()) {
 		case 1: cout << "one pair"; break;
 		case 2: cout << "two pair"; break;

@@ -22,6 +22,8 @@ public:
 	std::vector<Card> face() const {return opened_cds;}
 	int read_final();
 	int read_hand();
+	int open_cards();
+	void show_family();
 
 protected:
 	Hand(std::array<Card, 5> h);

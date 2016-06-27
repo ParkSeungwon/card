@@ -60,8 +60,8 @@ int Game::round()
 			else think(k);
 		}
 	}
-	cur_round++;
-	if(cur_round == 7) open_cards();
+	cout << endl << "Round " << ++cur_round << endl << endl;
+	if(cur_round == 8) open_cards();
 	else dealer(true);
 	return cur_round;
 }
@@ -69,7 +69,7 @@ int Game::round()
 void Game::open_cards()
 {
 	for(int i=0; i<player_count; i++) 
-		if(status[i] == CALL) player[i].read_final();
+		if(status[i] == CALL) player[i].open_cards();
 	int j = 0;
 	for(int i=1; i<player_count; i++) if(player[j] < player[i]) j = i;
 	cout << "player " << j << " won!!" << endl;

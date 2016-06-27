@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 	Game game(atoi(argv[1]));
-	while(game.init_game()) while(game.round() != 7);
+	while(game.init_game()) while(game.round() != 8);
 }
 
 
