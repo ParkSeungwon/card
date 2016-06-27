@@ -139,9 +139,8 @@ void Game::think(int k)
 	int nth = count_if(p, p+7, [pt](float a) { return a > pt;});
 	switch(nth) {
 		case 0: bet(k, game_money/3); break;
-		case 1: bet(k, game_money/4); break;
-		case 2: call(k); break;
-		default: die(k);
+		case 1: call(k); break;
+		case 2: die(k);
 	}
 }
 

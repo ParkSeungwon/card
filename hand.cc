@@ -13,7 +13,7 @@ float Hand::predict(array<Card, 52> dk, vector<Card> hn)
 {
 	if(hn.size() < 4) return 1;//3 is better
 	if(hn.size() == 7)  return read_final();
-	auto part = partition(dk.begin(), dk.end(), Card::is_open);
+	auto part = partition(dk.begin(), dk.end(), [](Card a) {return !a.show();});
 	part = remove_if(dk.begin(), part, [&](Card a) {
 			return find(cards.begin(), cards.end(), a) != cards.end();});
 	int sz = part - dk.begin();
@@ -93,6 +93,7 @@ int Hand::read_hand()
 	if(is_flush()) point_ += 5;//2
 	if(is_straight()) point_ += 4;//3
 	if(point_ == 0) point_ += count_same();
+	return point_;
 }
 
 int Hand::read_final()
