@@ -1,37 +1,38 @@
 #pragma once
-#include<string>
-#include<array>
-#include<vector>
-#include<iostream>
-#include<exception>
+#include"card.h"
 
-class Hand
+class Hand5
 {
 public:
-	Hand() {}
-	void operator+=(Card r) {cards[n_++] = r;} 
-	bool operator<(const Hand& r) const;
-	void clear() {n_= 0;}
-	void show(int zero_if_player_is_human);
+	Hand5(std::array<Card, 5> cards);
+	
+	bool operator<(const Hand5& r) const;
+	void show();
+	
 	int point() const {return point_;}
 	void point(int p) {point_ = p;}
-	float predict(std::array<Card, 52> deck);
-	float predict(std::array<Card, 52> deck, std::vector<Card> hn);
-	std::vector<Card> face() const;
-	int read_final();
-	int read_hand();
-	int open_cards();
-	void show_family();
 
 protected:
-	int point_;
-	int n_;
-	std::array<Card, 7> cards;
+	Hand5() {}
+	int point_, n_ = 5;
+	std::array<Card, 5> cards;
 
-private:
-	bool is_straight() ;
+	bool is_straight() const;
 	bool is_flush() const;
 	int count_same();
+
+private:
+};
+
+class Hand7 : public Hand5
+{
+public:
+	Hand7(std::array<Card, 7> cards);
+	void show();
+
+protected:
+	Hand7() {}
+	Card rest[2];
 };
 
 

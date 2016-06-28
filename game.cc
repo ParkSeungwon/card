@@ -1,27 +1,35 @@
-#include"game.h"
 #include<iostream>
 #include<algorithm>
+#include"game.h"
+#include"player.h"
 using namespace std;
-
 Game::Game(int many)
 {
 	player_count = many;
-	for(int i=many; i<7; i++) status[i] = NOT_IN;
-	for(int i=0; i<player_count; i++) money[i] = 2000;
-	for(int i=0; i<player_count; i++) status[i] = BET;
+	for(int i=many; i<7; i++) player[i].status(NOT_IN);
+	for(int i=0; i<player_count; i++) player[i].status(BET);
 }
 
 bool Game::init_game()
 {
-	if(count(status, status+player_count, BROKE) == player_count-1) return false;
+	int j=0, k;
+	for(int i=0; i<player_count; i++) {
+		if(player[i].money() <= 0) j++; 
+		else k=i;
+	}
+	if(j == player_count -1) {
+		cout << "winner is player " << k << endl;
+		return false;
+	}
+
 	deck.shuffle_deck();
 	game_money = 0;
 	call_money = 0;
 	cur_round = 3;
 	for(int i=0; i<7; i++) bet_count[i] = 0;
 	for(int i=0; i<player_count; i++) {
-		if(status[i] != BROKE) {
-			status[i] = BET;
+		if(player[i].status() != BROKE) {
+			player[i].status(BET);
 			player[i].clear();
 			money[i] -= 10;
 			game_money += 10;

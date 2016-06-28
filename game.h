@@ -1,13 +1,12 @@
 #pragma once
-#include"card.h"
-#include"hand.h"
+#include"player.h"
 
 class Game
 {
 public: 
 	Game(int how_many_players);
 	bool init_game();
-	Hand player[7];
+	Player player[7];
 	int decide_first();
 	int round();
 
@@ -18,7 +17,6 @@ protected:
 	int call_money;
 	int cur_round;
 	int bet_count[7], money[7];
-	enum Status { DIE, CALL, BET, BROKE, NOT_IN} status[7];
 
 private:
 	void think(int player);
