@@ -14,7 +14,7 @@ public:
 
 protected:
 	Hand5() {}
-	int point_, n_ = 5;
+	int point_ = 0, n_ = 5;
 	std::array<Card, 5> cards;
 
 	bool is_straight() const;

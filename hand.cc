@@ -11,7 +11,7 @@ Hand5::Hand5(array<Card, 5> cd)
 	sort(cards.begin(), cards.end());
 	if(is_straight()) point_ += 4;
 	if(is_flush()) point_ += 5;
-	if(point_ == 0) count_same();
+	if(point_ == 0) point_ += count_same();
 }
 
 bool Hand5::is_flush() const
@@ -44,10 +44,10 @@ int Hand5::count_same()
 		for(auto& a : cards)
 			if(count(cards.begin(), cards.end(), a.n) == 2) a.family(false);
 	}
-	auto it = partition(cards.begin(), cards.end(), [](const Card& a) {
+	auto it = partition(cards.begin(), cards.begin() + n_, [](const Card& a) {
 			return a.family();});
 	sort(cards.begin(), it, greater<Card>());
-	sort(it, cards.begin(), greater<Card>());
+	sort(it, cards.begin() + n_, greater<Card>());
 	return k+l == 4 ? 6 : k+l;
 }
 

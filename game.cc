@@ -45,11 +45,11 @@ bool Game::init_game()
 int Game::decide_first()
 {
 	int j = 0;
-	for(int i=1; i<player_count; i++) {
-		if(status[i] == CALL) player[i].read_hand();
-		else player[i].point(-1);
+	while(player[j].status() != CALL)  j++;
+	for(int i=j+1; i<player_count; i++) {
+		if(player[i].status() != CALL) continue;
+		if(player[j] < player[i]) j = i;
 	}
-	for(int i=1; i<player_count; i++) if(player[j] < player[i]) j = i;
 	first_to_go = j;
 	return j;
 }
@@ -59,7 +59,8 @@ int Game::round()
 	int fr = decide_first();
 	int k;
 	call_money = 0;
-	for(int i=0; i<player_count; i++) if(status[i] != BROKE) status[i] = BET;
+	for(int i=0; i<player_count; i++)
+		if(player[i].status() != BROKE) player[i].status(BET);
 	show();
 	for(int n = fr; find(status, status+7, BET) != status+7; n++) {
 		k = n % player_count;
@@ -100,7 +101,7 @@ void Game::show()
 void Game::dealer(bool open)
 {
 	for(int i=0; i<7; i++) {
-		if(status[i] == BET || status[i] == CALL) 
+		if(player[i].status[i] == BET || status[i] == CALL) 
 			player[i] += deck.distribute_card(open);
 	}
 }

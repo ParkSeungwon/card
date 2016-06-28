@@ -16,6 +16,12 @@ void Player::operator+=(Card a)
 	if(point_ == 0 && n_ > 1) point_ = count_same();
 }
 	
+float Player::predict(const Deck& dk, const Player& other) const
+{
+	auto hn = other.face();
+	return predict(dk.deck, hn);
+}
+
 float Player::predict(array<Card, 52> dk, vector<Card> hn) const
 {
 	if(hn.size() < 4) return 1;//3 is better
@@ -40,28 +46,28 @@ float Player::predict(array<Card, 52> dk, vector<Card> hn) const
 	return float(m) / n;
 }
 
-float Player::predict(array<Card, 52> dk) const
+float Player::predict(const Deck& dk) const
 {
 	vector<Card> t;
-	for(auto& a : cards) t.push_back(a);
+	for(int i=0; i<n_; i++) t.push_back(cards[i]);
 	t.push_back(rest[0]);
 	t.push_back(rest[1]);
-	return predict(dk, t);
+	return predict(dk.deck, t);
 }
 
 vector<Card> Player::face() const
 {
 	vector<Card> r;
-	for(auto& a : cards) r.push_back(a);
+	for(int i=0; i<n_; i++) r.push_back(cards[i]);
 	return r;
 }
 
 void Player::show()
 {
-	Card::utf8chr(0x1f0a0);
-	cout << ' ';
-	Card::utf8chr(0x1f0a0);
-	cout << ' ';
+	cout << Card::utf8chr(0x1f0a0);
+	cout << "  ";
+	cout << Card::utf8chr(0x1f0a0);
+	cout << "  ";
 	Hand5::show();
 }
 
