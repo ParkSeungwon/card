@@ -1,6 +1,7 @@
 #pragma once
 #include"player.h"
 
+
 class Game
 {
 public: 
@@ -13,10 +14,11 @@ public:
 protected:
 	int player_count;
 	Deck deck;
+	enum Status { DIE, CALL, BET, BROKE, NOT_IN} status[7];
+	int bet_count[7], money[7];
 	int game_money;
 	int call_money;
 	int cur_round;
-	int bet_count[7], money[7];
 
 private:
 	void think(int player);

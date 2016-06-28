@@ -24,7 +24,7 @@ pair<float, int> Player::predict(const Deck& dk, const Player& other) const
 
 pair<float, int> Player::predict(array<Card, 52> dk, vector<Card> hn) const
 {
-	if(hn.size() < 3) return {1, 2.0};//3 is better
+	if(hn.size() < 4) return {1, 2.0};//3 is better
 	array<Card, 7> cd;
 	float f;
 	if(hn.size() == 7)  {

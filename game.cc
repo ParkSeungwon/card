@@ -3,19 +3,20 @@
 #include"game.h"
 #include"player.h"
 using namespace std;
-/*
+
 Game::Game(int many)
 {
 	player_count = many;
-	for(int i=many; i<7; i++) player[i].status(NOT_IN);
-	for(int i=0; i<player_count; i++) player[i].status(BET);
+	for(int i=many; i<7; i++) status[i] = NOT_IN;
+	for(int i=0; i<player_count; i++) status[i] = CALL;
+	for(int i=0; i<player_count; i++) money[i] = 2000;
 }
 
 bool Game::init_game()
 {
 	int j=0, k;
 	for(int i=0; i<player_count; i++) {
-		if(player[i].money() <= 0) j++; 
+		if(status[i] == BROKE) j++; 
 		else k=i;
 	}
 	if(j == player_count -1) {
@@ -29,9 +30,9 @@ bool Game::init_game()
 	cur_round = 3;
 	for(int i=0; i<7; i++) bet_count[i] = 0;
 	for(int i=0; i<player_count; i++) {
-		if(player[i].status() != BROKE) {
-			player[i].status(BET);
-			player[i].clear();
+		if(status[i] != BROKE) {
+			status[i] = CALL;
+			player[i].new_game();
 			money[i] -= 10;
 			game_money += 10;
 		}
@@ -46,9 +47,9 @@ bool Game::init_game()
 int Game::decide_first()
 {
 	int j = 0;
-	while(player[j].status() != CALL)  j++;
+	while(status[j] != CALL)  j++;
 	for(int i=j+1; i<player_count; i++) {
-		if(player[i].status() != CALL) continue;
+		if(status[i] != CALL) continue;
 		if(player[j] < player[i]) j = i;
 	}
 	first_to_go = j;
@@ -61,7 +62,7 @@ int Game::round()
 	int k;
 	call_money = 0;
 	for(int i=0; i<player_count; i++)
-		if(player[i].status() != BROKE) player[i].status(BET);
+		if(status[i] != BROKE) status[i] = BET;
 	show();
 	for(int n = fr; find(status, status+7, BET) != status+7; n++) {
 		k = n % player_count;
@@ -94,15 +95,15 @@ void Game::show()
 		if(first_to_go == i) cout << "F ";
 		if(status[i] != BROKE) {
 			cout << "player" << i << "($" << money[i] << ") : ";
-			player[i].show(i);
+			player[i].show();
 		}
 	}
 }
 
 void Game::dealer(bool open)
 {
-	for(int i=0; i<7; i++) {
-		if(player[i].status[i] == BET || status[i] == CALL) 
+	for(int i=0; i<player_count; i++) {
+		if(status[i] == BET || status[i] == CALL) 
 			player[i] += deck.distribute_card(open);
 	}
 }
@@ -140,13 +141,13 @@ void Game::die(int pl)
 void Game::think(int k)
 {
 	cout << "player " << k << " thinking..." << endl;
-	float pt = player[k].predict(deck.deck);
-	float p[7] {};
+	auto pt = player[k].predict(deck);
+	pair<float, int> p[7] {};
 	for(int i=0; i<player_count; i++) {
 		if(status[i] != DIE && i != k) 
-			p[i] = player[k].predict(deck.deck, player[i].face());
+			p[i] = player[k].predict(deck, player[i]);
 	}
-	int nth = count_if(p, p+7, [pt](float a) { return a > pt;});
+	int nth = count_if(p, p+7, [pt](pair<float, int> a) { return a.first > pt.first;});
 	switch(nth) {
 		case 0: bet(k, game_money/3); break;
 		case 1: call(k); break;
@@ -168,4 +169,4 @@ void Game::human(int k)
 		case 'd': die(k);
 	}
 }
-*/
+

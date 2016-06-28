@@ -1,8 +1,6 @@
 #pragma once
 #include"hand.h"
 
-enum Status { DIE, CALL, BET, BROKE, NOT_IN};
-
 class Player : public Hand7
 {
 public:
@@ -21,14 +19,17 @@ private:
 	std::pair<float, int> predict(std::array<Card, 52> deck, std::vector<Card> hn) const;
 	std::vector<Card> face() const;
 };
-
+/*
 class Gambler : public Player
 {
 public:
+	Gambler(const Gambler* others, int me);
+	int operator()();
 	Status status() {return status_;}
 	void status(Status s) {status_ = s;}
 
 protected:
+	float bet();//returns 0~1.0 1.0 means full betting
 	int money_ = 2000, bet_money_ = 10;
 	Status status_;
-};
+};*/
