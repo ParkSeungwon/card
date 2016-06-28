@@ -10,12 +10,13 @@ public:
 	Player player[7];
 	int decide_first();
 	int round();
+	void show();
 
 protected:
 	int player_count;
 	Deck deck;
 	enum Status { DIE, CALL, BET, BROKE, NOT_IN} status[7];
-	int bet_count[7], money[7];
+	int bet_count[7], money[7], bet_money[7];
 	int game_money;
 	int call_money;
 	int cur_round;
@@ -27,7 +28,6 @@ private:
 	void call(int player);
 	void die(int player);
 	void dealer(bool open_or_not);
-	void show();
 	void open_cards();
 
 	int first_to_go;

@@ -65,12 +65,15 @@ vector<Card> Player::face() const
 	return r;
 }
 
-void Player::show() const
+void Player::show(int i) const
 {
-	cout << Card::utf8chr(0x1f0a0);
-	cout << "  ";
-	cout << Card::utf8chr(0x1f0a0);
-	cout << "  ";
+	if(i == 0) cout << rest[0] << ' ' << rest[1] << ' ';
+	else {
+		cout << Card::utf8chr(0x1f0a0);
+		cout << "  ";
+		cout << Card::utf8chr(0x1f0a0);
+		cout << "  ";
+	}
 	Hand5::show();
 }
 

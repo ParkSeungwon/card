@@ -7,7 +7,7 @@ public:
 	Player() {n_ = 0;}//player can have various number of cards. Base was always 5.
 	void operator+=(Card r); 
 	void new_game() { m_=0; n_=0;}
-	void show() const;
+	void show(int human_or_not) const;
 	int open_cards();
 	std::pair<float, int> predict(const Deck& deck) const;
 	std::pair<float, int> predict(const Deck& deck, const Player& other) const;
