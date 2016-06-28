@@ -59,7 +59,7 @@ bool Hand5::operator<(const Hand5& r) const
 	} else return point() < r.point();
 }
 
-void Hand5::show()
+void Hand5::show() const
 {
 	for(int i=0; i<n_; i++) cout << cards[i] << ' ';
 	switch(point()) {
@@ -95,7 +95,7 @@ Hand7::Hand7(array<Card, 7> cd)// : Hand5(construct(cd))
 	}
 }
 
-void Hand7::show()
+void Hand7::show() const
 {
 	cout << rest[0] << ' ' << rest[1] << " + ";
 	Hand5::show();

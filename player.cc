@@ -16,37 +16,40 @@ void Player::operator+=(Card a)
 	if(point_ == 0 && n_ > 1) point_ = count_same();
 }
 	
-float Player::predict(const Deck& dk, const Player& other) const
+pair<float, int> Player::predict(const Deck& dk, const Player& other) const
 {
 	auto hn = other.face();
 	return predict(dk.deck, hn);
 }
 
-float Player::predict(array<Card, 52> dk, vector<Card> hn) const
+pair<float, int> Player::predict(array<Card, 52> dk, vector<Card> hn) const
 {
-	if(hn.size() < 4) return 1;//3 is better
+	if(hn.size() < 3) return {1, 2.0};//3 is better
 	array<Card, 7> cd;
+	float f;
 	if(hn.size() == 7)  {
 		for(int i=0; i<7; i++) cd[i] = hn[i];
-		return Hand7(cd).point();
+		return {f = Hand7(cd).point(), f};
 	}
 	auto part = partition(dk.begin(), dk.end(), [](Card a) {return !a.show();});
 	part = remove_if(dk.begin(), part, [&](Card a) {
 			return find(cards.begin(), cards.end(), a) != cards.end();});
 	int sz = part - dk.begin();
 	nCr ncr(sz, 7 - hn.size());
-	int m = 0, n = 0;
+	int m = 0, n = 0, hi = 0, tmp;
 	while(ncr.next()) {
 		int i;
 		for(i=0; i<ncr.size(); i++) cd[i] = dk[ncr[i] - 1];
 		for(int j=0; i<7; i++, j++) cd[i] = hn[j];
-		m += Hand7(cd).point();
+		tmp = Hand7(cd).point();
+		if(tmp > hi) hi = tmp;
+		m += tmp;
 		n++;
 	}
-	return float(m) / n;
+	return {float(m) / n, hi};
 }
 
-float Player::predict(const Deck& dk) const
+pair<float, int> Player::predict(const Deck& dk) const
 {
 	vector<Card> t;
 	for(int i=0; i<n_; i++) t.push_back(cards[i]);
@@ -62,7 +65,7 @@ vector<Card> Player::face() const
 	return r;
 }
 
-void Player::show()
+void Player::show() const
 {
 	cout << Card::utf8chr(0x1f0a0);
 	cout << "  ";
@@ -70,4 +73,16 @@ void Player::show()
 	cout << "  ";
 	Hand5::show();
 }
+
+int Player::open_cards()
+{
+	array<Card, 7> cd;
+	for(int i=0; i<5; i++) cd[i] = cards[i];
+	cd[5] = rest[0]; cd[6] = rest[1];
+	static_cast<Hand7&>(*this) = Hand7(cd);
+	Hand7::show();
+	return point_;
+}
+	
+
 

@@ -7,7 +7,7 @@ public:
 	Hand5(std::array<Card, 5> cards);
 	
 	bool operator<(const Hand5& r) const;
-	void show();
+	void show() const;
 	
 	int point() const {return point_;}
 	void point(int p) {point_ = p;}
@@ -28,7 +28,7 @@ class Hand7 : public Hand5
 {
 public:
 	Hand7(std::array<Card, 7> cards);
-	void show();
+	void show() const;
 
 protected:
 	Hand7() {}

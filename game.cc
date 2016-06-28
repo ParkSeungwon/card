@@ -3,6 +3,7 @@
 #include"game.h"
 #include"player.h"
 using namespace std;
+/*
 Game::Game(int many)
 {
 	player_count = many;
@@ -167,3 +168,4 @@ void Game::human(int k)
 		case 'd': die(k);
 	}
 }
+*/
