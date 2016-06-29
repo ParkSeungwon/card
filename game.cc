@@ -1,6 +1,8 @@
 #include<iostream>
 #include<algorithm>
 #include<functional>
+#include<queue>
+#include<future>
 #include"game.h"
 #include"player.h"
 using namespace std;
@@ -76,18 +78,74 @@ int Game::round()
 		}
 	}
 	cout << endl;
+	queue<future<int>> q;
 	for(int n = fr; call_count && count(status, status+7, BET) != 0; n++) {
 		k = n % player_count;
 		if(status[k] == CALL || status[k] == BET) {
-			if(k == 0) human(k);
-			else think(k);
+			if(k == 0) q.push(async(launch::async, &Game::human, this, k));
+			else q.push(async(launch::async, &Game::think, this, k));
 		}
+	}//does not change call_count ..
+	int pl;
+	while(!q.empty()) {
+		pl = q.front().get();
+		if(pl != 0) after_think(pl);
+		q.pop();
 	}
+
 	cout << endl << "Round " << ++cur_round << endl << endl;
 	if(cur_round == 8) open_cards();
 	else dealer(true);
 
 	return cur_round;
+}
+
+int Game::think(int k)
+{
+	auto pt = player[k].predict(deck);
+	pair<float, int> p[7] {};
+	for(int i=0; i<player_count; i++) {
+		if(status[i] != DIE && status[i] != BROKE && i != k) 
+			p[i] = player[k].predict(deck, player[i]);
+	}
+	sort(p, p+7, greater<pair<float, int>>()); 
+	float v = (1 + pt.first - p[0].first) / 3;
+	v += dist(rand);
+	prob[k] = v;
+	return k;
+}
+
+void Game::after_think(int k) 
+{
+	if(prob[k] < 0) {
+		if(call_money - bet_money[k] < 30) call(k); 
+		else die(k);
+	} else if(prob[k] < 0.5) call(k);
+	else bet(k, (prob[k] - 0.5) * game_money);
+	//int nth = count_if(p, p+7, [pt](pair<float, int> a) { return a.first > pt.first;});
+//	switch(nth) {
+//		case 0: bet(k, game_money/3); break;
+//		case 1: call(k); break;
+//		default: die(k);
+//	}
+}
+
+int Game::human(int k)
+{
+	cout << "Raise, Call, Die?";
+	char c;
+	cin >> c;
+	int diff = call_money - bet_money[k];
+	switch(c) {
+		case 'r': 
+			cout << "How much do you want to bet?($";
+			cout << diff + 1 << " ~ $";
+			cout << (game_money/2 < diff+100 ? game_money/2 : diff+100) <<  ")?";
+			int m; cin >> m; bet(k, m); break;
+		case 'c': call(k); break;
+		case 'd': die(k);
+	}
+	return k;
 }
 
 void Game::open_cards()
@@ -185,44 +243,4 @@ void Game::die(int pl)
 	}
 }
 
-void Game::think(int k)
-{
-	auto pt = player[k].predict(deck);
-	pair<float, int> p[7] {};
-	for(int i=0; i<player_count; i++) {
-		if(status[i] != DIE && status[i] != BROKE && i != k) 
-			p[i] = player[k].predict(deck, player[i]);
-	}
-	sort(p, p+7, greater<pair<float, int>>()); 
-	float v = (1 + pt.first - p[0].first) / 3;
-	v += dist(rand);
-	if(v < 0) {
-		if(call_money - bet_money[k] < 30) call(k); 
-		else die(k);
-	} else if(v < 0.5) call(k);
-	else bet(k, (v - 0.5) * game_money);
-	//int nth = count_if(p, p+7, [pt](pair<float, int> a) { return a.first > pt.first;});
-//	switch(nth) {
-//		case 0: bet(k, game_money/3); break;
-//		case 1: call(k); break;
-//		default: die(k);
-//	}
-}
-
-void Game::human(int k)
-{
-	cout << "Raise, Call, Die?";
-	char c;
-	cin >> c;
-	int diff = call_money - bet_money[k];
-	switch(c) {
-		case 'r': 
-			cout << "How much do you want to bet?($";
-			cout << diff + 1 << " ~ $";
-			cout << (game_money/2 < diff+100 ? game_money/2 : diff+100) <<  ")?";
-			int m; cin >> m; bet(k, m); break;
-		case 'c': call(k); break;
-		case 'd': die(k);
-	}
-}
 

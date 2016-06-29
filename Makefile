@@ -1,4 +1,4 @@
-CFLAG = -std=c++11 -g -fmax-errors=3 
+CFLAG = -std=c++11 -g -fmax-errors=3 -pthread
 CC = g++
 SRC = $(wildcard *.cc)
 CPP = $(wildcard *.cpp)
