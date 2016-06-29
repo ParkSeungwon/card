@@ -7,10 +7,7 @@ class Game
 public: 
 	Game(int how_many_players);
 	bool init_game();
-	Player player[7];
-	int decide_first();
 	int round();
-	void show(int player);
 
 protected:
 	int player_count;
@@ -20,8 +17,11 @@ protected:
 	int game_money;
 	int call_money, call_count;
 	int cur_round, cur_player_count;
+	Player player[7];
 
 private:
+	void show(int player);
+	int decide_first();
 	void think(int player);
 	void human(int player);
 	bool bet(int player, int money);
