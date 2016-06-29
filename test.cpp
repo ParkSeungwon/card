@@ -10,6 +10,6 @@ int main()
 	for(auto& a : game.player) a.show(2);
 	cout << game.decide_first();
 	
-	game.show();
+	game.show(1);
 
 }

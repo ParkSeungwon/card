@@ -72,7 +72,6 @@ void Hand5::show() const
 		case 7: cout << "four card"; break;
 		case 9: cout << "straight flush"; break;
 	}
-	cout << endl;
 }
 
 Hand7::Hand7(array<Card, 7> cd)// : Hand5(construct(cd))

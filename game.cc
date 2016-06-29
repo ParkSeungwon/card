@@ -1,5 +1,6 @@
 #include<iostream>
 #include<algorithm>
+#include<functional>
 #include"game.h"
 #include"player.h"
 using namespace std;
@@ -18,11 +19,13 @@ bool Game::init_game()
 	game_money = 0;
 	call_money = 0;
 	cur_round = 3;
+	cur_player_count = 0;
 	for(int i=0; i<player_count; i++) {
 		if(money[i] <= 0) {
 			status[i] = BROKE;
 			j++;
 		} else {
+			cur_player_count++;
 			winner = i;
 			status[i] = CALL;
 			player[i].new_game();
@@ -38,6 +41,7 @@ bool Game::init_game()
 	deck.shuffle_deck();
 	for(int i=0; i<7; i++) bet_count[i] = 0;
 
+	cout << endl << "---------------New Game started-----------------" << endl;
 	dealer(false);
 	dealer(false);
 	dealer(true);
@@ -60,14 +64,19 @@ int Game::round()
 {
 	int fr = decide_first();
 	int k;
+	call_count = -1;
 	call_money = 0;
 	for(int i=0; i<player_count; i++) {
 		bet_money[i] = 0;
 		bet_count[i] = 0;
 		if(status[i] != BROKE && status[i] != DIE) status[i] = BET;
+		if(status[i] != BROKE) {
+			show(i);
+			cout << endl;
+		}
 	}
-	show();
-	for(int n = fr; count(status, status+7, BET) != 0; n++) {
+	cout << endl;
+	for(int n = fr; call_count && count(status, status+7, BET) != 0; n++) {
 		k = n % player_count;
 		if(status[k] == CALL || status[k] == BET) {
 			if(k == 0) human(k);
@@ -77,16 +86,6 @@ int Game::round()
 	cout << endl << "Round " << ++cur_round << endl << endl;
 	if(cur_round == 8) open_cards();
 	else dealer(true);
-	int j = 0, winner;;
-	for(int i=0; i<player_count; i++) {
-		if(status[i] == DIE || status[i] == BROKE) j++;
-		else winner = i;
-	}
-	if(j == player_count - 1) {
-		cur_round = 8;
-		money[winner] += game_money;
-		cout << "player" << winner << " won!!" << endl;
-	}
 
 	return cur_round;
 }
@@ -95,7 +94,11 @@ void Game::open_cards()
 {
 	vector<int> v;
 	for(int i=0; i<player_count; i++) {
-		if(status[i] == CALL) player[i].open_cards();
+		if(status[i] == BROKE) continue;
+		cout << "player " << i << " has ";
+		if(status[i] == CALL || status[i] == BET) player[i].open_cards();
+		else if(status[i] == DIE) cout << "died.";
+		cout << endl;
 		v.push_back(i);
 	}
 	int j = 0;
@@ -106,17 +109,19 @@ void Game::open_cards()
 	for(int i=0; i<player_count; i++) if(money[i] <= 0) status[i] = BROKE;
 }
 
-void Game::show()
+void Game::show(int pl)
 {
-	cout << "Game money : $" << game_money << ", Bet : " << call_money << endl;
-	for(int i=0; i<player_count; i++) {
-		if(status[i] == DIE) cout << "D ";
-		if(first_to_go == i) cout << "F ";
-		if(status[i] != BROKE) {
-			cout << "player" << i << "($" << money[i] << " - ";
-			cout << bet_money[i] << ") : ";
-			player[i].show(i);
-		}
+	cout << "Deposit : $";
+	cout.width(5); cout << right << game_money << ',';
+	cout.width(5); cout << right << call_money << " | ";
+	if(status[pl] == DIE) cout << 'D';
+	if(first_to_go == pl) cout << 'F';
+	if(status[pl] != BROKE) {
+		if(pl == 0) cout << " You";
+		else cout << " player" << pl;
+		cout << "($" << money[pl] << " - ";
+		cout << bet_money[pl] << ") : ";
+		player[pl].show(pl);
 	}
 }
 
@@ -130,15 +135,17 @@ void Game::dealer(bool open)
 
 bool Game::bet(int pl, int mo)
 {
-	if(mo > call_money-bet_money[pl] && mo<=game_money/2 && bet_count[pl]<2) {
+	if(mo > game_money/2) mo = game_money / 2;
+	if(call_count && mo > call_money-bet_money[pl] && bet_count[pl]<2) {
 		bet_count[pl]++;
 		money[pl] -= mo;
 		call_money = bet_money[pl] += mo;
 		//call_money = bet_money[pl];
 		game_money += mo;
+		call_count = cur_player_count - 1;
 		status[pl] = BET;
-		cout << "player " << pl << " betted " << mo << endl;
-		show();
+		show(pl);
+		cout << " betted " << mo << endl;
 		return true;
 	} else {
 		call(pl);
@@ -151,33 +158,51 @@ void Game::call(int pl)
 	int diff = call_money - bet_money[pl];
 	money[pl] -= diff;
 	game_money += diff;
+	call_count--;
 	bet_money[pl] = call_money;
 	status[pl] = CALL;
-	cout << "player " << pl << " called " << call_money << endl;
-	show();
+	show(pl);
+	cout << " called " << call_money << endl;
 }
 
 void Game::die(int pl)
 {
 	status[pl] = DIE;
-	cout << " player " << pl << " has died." << endl;
+	show(pl);
+	call_count--;
+	cur_player_count--;
+	cout << " has died." << endl;
+	int j = 0, winner;
+	for(int i=0; i<player_count; i++) {
+		if(status[i] == DIE || status[i] == BROKE) j++;
+		else winner = i;
+	}
+	if(j == player_count - 1) {
+		cur_round = 8;
+		money[winner] += game_money;
+		cout << endl << "player" << winner << " won!!" << endl;
+	}
 }
 
 void Game::think(int k)
 {
-	cout << "player " << k << " thinking..." << endl;
 	auto pt = player[k].predict(deck);
 	pair<float, int> p[7] {};
 	for(int i=0; i<player_count; i++) {
-		if(status[i] != DIE && i != k) 
+		if(status[i] != DIE && status[i] != BROKE && i != k) 
 			p[i] = player[k].predict(deck, player[i]);
 	}
-	int nth = count_if(p, p+7, [pt](pair<float, int> a) { return a.first > pt.first;});
-	switch(nth) {
-		case 0: bet(k, game_money/3); break;
-		case 1: call(k); break;
-		case 2: die(k);
-	}
+	sort(p, p+7, greater<pair<float, int>>()); 
+	float v = (1 + pt.first - p[0].first) / 3;
+	if(v < 0) die(k);
+	else if(v < 0.5) call(k);
+	else bet(k, (v - 0.5) * game_money);
+	//int nth = count_if(p, p+7, [pt](pair<float, int> a) { return a.first > pt.first;});
+//	switch(nth) {
+//		case 0: bet(k, game_money/3); break;
+//		case 1: call(k); break;
+//		default: die(k);
+//	}
 }
 
 void Game::human(int k)
@@ -187,8 +212,8 @@ void Game::human(int k)
 	cin >> c;
 	switch(c) {
 		case 'r': 
-			cout << "How much do you want to bet?($1 ~ $";
-			cout << game_money/2 << ")?";
+			cout << "How much do you want to bet?($";
+			cout << call_money - bet_money[k] + 1 << " ~ $" << game_money/2 << ")?";
 			int m; cin >> m; bet(k, m); break;
 		case 'c': call(k); break;
 		case 'd': die(k);
