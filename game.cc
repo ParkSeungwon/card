@@ -5,7 +5,7 @@
 #include"player.h"
 using namespace std;
 
-Game::Game(int many)
+Game::Game(int many) : dist(0.0, 0.3)
 {
 	player_count = many;
 	for(int i=many; i<7; i++) status[i] = NOT_IN;
@@ -51,9 +51,9 @@ bool Game::init_game()
 int Game::decide_first()
 {
 	int j = 0;
-	while(status[j] != CALL)  j++;
+	while(status[j] == DIE || status[j] == BROKE)  j++;
 	for(int i=j+1; i<player_count; i++) {
-		if(status[i] != CALL) continue;
+		if(status[i] != CALL && status[i] != BET) continue;
 		if(player[j] < player[i]) j = i;
 	}
 	first_to_go = j;
@@ -104,8 +104,8 @@ void Game::open_cards()
 	int j = 0;
 	for(int i=1; i<v.size(); i++) 
 		if(player[v[j]] < player[v[i]]) j = i;
-	cout << "player " << v[j] << " won!!" << endl;
-	money[j] += game_money;
+	cout << "player " << v[j] << " won + $" << game_money << endl;
+	money[v[j]] += game_money;
 	for(int i=0; i<player_count; i++) if(money[i] <= 0) status[i] = BROKE;
 }
 
@@ -114,8 +114,8 @@ void Game::show(int pl)
 	cout << "Deposit : $";
 	cout.width(5); cout << right << game_money << ',';
 	cout.width(5); cout << right << call_money << " | ";
-	if(status[pl] == DIE) cout << 'D';
-	if(first_to_go == pl) cout << 'F';
+	if(status[pl] == DIE) cout << Card::utf8chr(0x2620);
+	if(first_to_go == pl) cout << Card::utf8chr(0x2691);
 	if(status[pl] != BROKE) {
 		if(pl == 0) cout << " You";
 		else cout << " player" << pl;
@@ -136,6 +136,7 @@ void Game::dealer(bool open)
 bool Game::bet(int pl, int mo)
 {
 	if(mo > game_money/2) mo = game_money / 2;
+	if(mo > 100 + call_money - bet_money[pl]) mo = 100 + call_money - bet_money[pl];
 	if(call_count && mo > call_money-bet_money[pl] && bet_count[pl]<2) {
 		bet_count[pl]++;
 		money[pl] -= mo;
@@ -180,7 +181,7 @@ void Game::die(int pl)
 	if(j == player_count - 1) {
 		cur_round = 8;
 		money[winner] += game_money;
-		cout << endl << "player" << winner << " won!!" << endl;
+		cout << endl << "player" << winner << " won $" << game_money << endl;
 	}
 }
 
@@ -194,8 +195,11 @@ void Game::think(int k)
 	}
 	sort(p, p+7, greater<pair<float, int>>()); 
 	float v = (1 + pt.first - p[0].first) / 3;
-	if(v < 0) die(k);
-	else if(v < 0.5) call(k);
+	v += dist(rand);
+	if(v < 0) {
+		if(call_money - bet_money[k] < 30) call(k); 
+		else die(k);
+	} else if(v < 0.5) call(k);
 	else bet(k, (v - 0.5) * game_money);
 	//int nth = count_if(p, p+7, [pt](pair<float, int> a) { return a.first > pt.first;});
 //	switch(nth) {
@@ -210,10 +214,12 @@ void Game::human(int k)
 	cout << "Raise, Call, Die?";
 	char c;
 	cin >> c;
+	int diff = call_money - bet_money[k];
 	switch(c) {
 		case 'r': 
 			cout << "How much do you want to bet?($";
-			cout << call_money - bet_money[k] + 1 << " ~ $" << game_money/2 << ")?";
+			cout << diff + 1 << " ~ $";
+			cout << (game_money/2 < diff+100 ? game_money/2 : diff+100) <<  ")?";
 			int m; cin >> m; bet(k, m); break;
 		case 'c': call(k); break;
 		case 'd': die(k);

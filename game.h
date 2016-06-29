@@ -1,4 +1,5 @@
 #pragma once
+#include<random>
 #include"player.h"
 
 
@@ -30,6 +31,8 @@ private:
 	void dealer(bool open_or_not);
 	void open_cards();
 
+	std::normal_distribution<float> dist;
+	std::random_device rand;
 	int first_to_go;
 };
 
