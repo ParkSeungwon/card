@@ -1,7 +1,6 @@
 #include<iostream>
 #include<algorithm>
 #include<functional>
-#include<queue>
 #include<future>
 #include"game.h"
 #include"player.h"
@@ -79,19 +78,18 @@ int Game::round()
 	}
 	cout << endl;
 
-	array<future<int>, 7> fs;
+	future<int> fs[7];
 	int pl;
-	int get[7] {};
 	for(int i=1; i<player_count; i++)
 		if(status[i] == CALL || status[i] == BET) 
 			fs[i] = async(launch::async, &Game::think, this, i);
-	for(int n = fr; call_count && count(status, status+7, BET) != 0; n++) {
+	for(int n = fr, get[7]{}; call_count && count(status, status+7, BET) != 0; n++) {
 		k = n % player_count;
 		if(status[k] == CALL || status[k] == BET) {
 			if(k == 0) human(k);
 			else {
 				if(get[k] == 0) get[k] = fs[k].get();
-				after_think(get[k]);
+				after_think(get[k]);//get[k] == k
 			}
 		}
 	}//does not change call_count ..
@@ -126,12 +124,6 @@ void Game::after_think(int k)
 		else die(k);
 	} //else if(prob[k] < 0.3) call(k);
 	else bet(k, (0.3 + prob[k]) * 100);
-	//int nth = count_if(p, p+7, [pt](pair<float, int> a) { return a.first > pt.first;});
-//	switch(nth) {
-//		case 0: bet(k, game_money/3); break;
-//		case 1: call(k); break;
-//		default: die(k);
-//	}
 }
 
 int Game::human(int k)
@@ -173,9 +165,8 @@ void Game::open_cards()
 
 void Game::show(int pl)
 {
-	cout << "Deposit : $";
-	cout.width(5); cout << right << game_money << ',';
-	cout.width(5); cout << right << call_money << " | ";
+	cout << "Deposit :";
+	cout.width(4); cout << right << game_money << "$ | ";
 	if(status[pl] == DIE) cout << Card::utf8chr(0x2620);
 	if(first_to_go == pl) cout << Card::utf8chr(0x2691);
 	if(status[pl] != BROKE) {
