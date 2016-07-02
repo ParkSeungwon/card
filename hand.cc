@@ -9,7 +9,10 @@ Hand5::Hand5(array<Card, 5> cd)
 { 
 	cards = cd;
 	sort(cards.begin(), cards.end());
-	if(is_straight()) point_ += 4;
+	if(is_straight()) {
+		point_ += 4;
+		sort(cards.begin(), cards.end(), greater<Card>());
+	}
 	if(is_flush()) point_ += 5;
 	if(point_ == 0) point_ += count_same();
 }

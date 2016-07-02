@@ -28,7 +28,7 @@ ostream& operator<<(ostream& l, const Card& r)
 
 	l << Card::utf8chr(static_cast<int>(u));
 	l << ' ';
-	//l << r.glyph[i];
+
 	char ch;
 	switch(r.n) {
 		case 1: ch = 'A'; break;

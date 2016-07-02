@@ -16,6 +16,8 @@ Game::Game(int many) : dist(0.0, 0.3)
 
 bool Game::init_game()
 {
+	static int g_count = 0;
+	g_count++;
 	int j=0, winner;
 	game_money = 0;
 	call_money = 0;
@@ -42,7 +44,8 @@ bool Game::init_game()
 	deck.shuffle_deck();
 	for(int i=0; i<7; i++) bet_count[i] = 0;
 
-	cout << endl << "---------------New Game started-----------------" << endl;
+	cout << endl << "---------------Game " << g_count;
+	cout << " started-----------------" << endl;
 	dealer(false);
 	dealer(false);
 	dealer(true);
@@ -110,20 +113,18 @@ int Game::think(int k)
 			p[i] = player[k].predict(deck, player[i]);
 	}
 	sort(p, p+7, greater<pair<float, int>>()); 
-	float v = pt.first - p[0].first ;
-	v += dist(rand);
-	prob[k] = v;
+	prob[k] = pt.first - p[0].first;
 	return k;
 }
 
 void Game::after_think(int k) 
 {
 	int diff = call_money - bet_money[k];
-	if(prob[k] < -0.3) {
+	if(prob[k] + dist(rand) < -0.3) {
 		if(call_money - bet_money[k] < 30) call(k); 
 		else die(k);
 	} //else if(prob[k] < 0.3) call(k);
-	else bet(k, (0.3 + prob[k]) * 100);
+	else bet(k, (0.3 + prob[k] + dist(rand)) * 100);
 }
 
 int Game::human(int k)
