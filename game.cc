@@ -70,6 +70,7 @@ int Game::round()
 	int k;
 	call_count = -1;
 	call_money = 0;
+	cout << endl << "Round " << cur_round++ << endl << endl;
 	for(int i=0; i<player_count; i++) {
 		bet_money[i] = 0;
 		bet_count[i] = 0;
@@ -97,7 +98,6 @@ int Game::round()
 		}
 	}//does not change call_count ..
 
-	cout << endl << "Round " << ++cur_round << endl << endl;
 	if(cur_round == 8) open_cards();
 	else dealer(true);
 
@@ -120,7 +120,7 @@ int Game::think(int k)
 void Game::after_think(int k) 
 {
 	int diff = call_money - bet_money[k];
-	if(prob[k] + dist(rand) < -0.3) {
+	if(prob[k] + dist(rand) + game_money / 10000 < -0.3) {
 		if(call_money - bet_money[k] < 30) call(k); 
 		else die(k);
 	} //else if(prob[k] < 0.3) call(k);
@@ -147,6 +147,7 @@ int Game::human(int k)
 
 void Game::open_cards()
 {
+	cout << endl << "Final decision" << endl;
 	vector<int> v;
 	for(int i=0; i<player_count; i++) {
 		if(status[i] == BROKE) continue;
