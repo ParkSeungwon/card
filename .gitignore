@@ -5,3 +5,7 @@
 *.vim
 *.o
 *.gch
+find
+.
+-size
++3M
